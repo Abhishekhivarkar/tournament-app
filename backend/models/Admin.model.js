@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+import {ROLE,ROLE_ARRAY} from "../config/role.js"
 const adminSchema = new mongoose.Schema(
   {
     name: {
@@ -21,12 +21,6 @@ const adminSchema = new mongoose.Schema(
       unique: true
     },
 
-    bgmiGameId: {
-      type: String,
-      required: true,
-      unique: true
-    },
-
     password: {
       type: String,
       required: true
@@ -34,8 +28,8 @@ const adminSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["ADMIN"],
-      default: "ADMIN"
+      enum: ROLE_ARRAY,
+      default: ROLE.ADMIN
     },
 
     isActive: {
@@ -45,7 +39,7 @@ const adminSchema = new mongoose.Schema(
     resetPasswordToken:{
         type:String
     },
-    resetPasswordToken:{
+    resetPasswordExpire:{
         type:Date
     }
   },

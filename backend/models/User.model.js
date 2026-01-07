@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+import {ROLE,ROLE_ARRAY} from "../config/role.js"
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -34,8 +34,8 @@ const userSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["USER"],
-      default: "USER"
+      enum:ROLE_ARRAY,
+      default:ROLE.USER
     },
 
     isBanned: {
