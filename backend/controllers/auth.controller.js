@@ -2,8 +2,8 @@ import User from "../models/User.model.js"
 import Admin from "../models/Admin.model.js"
 import jwt from "jsonwebtoken"
 import crypto from "crypto"
-import bcryptjs from "bcryptjs"
-
+import bcrypt from "bcryptjs"
+import {sendResetPasswordMail} from "../service/mail.service.js"
 export const userRegister = async (req, res) => {
   try {
     const { name, email, phoneNumber, bgmiGameId, password } = req.body;
@@ -25,7 +25,7 @@ export const userRegister = async (req, res) => {
       });
     }
 
-    const hashPwd = await bcryptjs.hash(password, 10);
+    const hashPwd = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       name,
@@ -83,7 +83,7 @@ export const adminRegister = async (req, res) => {
       });
     }
 
-    const hashPwd = await bcryptjs.hash(password, 10);
+    const hashPwd = await bcrypt.hash(password, 10);
 
     const admin = await Admin.create({
       name,
@@ -123,11 +123,11 @@ export const login = async (req, res) => {
       });
     }
 
-    let account = await User.findOne({ email });
+    let account = await User.findOne({ email }).select("+password")
     let role = "user";
 
     if (!account) {
-      account = await Admin.findOne({ email });
+      account = await Admin.findOne({ email }).select("+password");
       role = "admin";
     }
 
@@ -138,7 +138,7 @@ export const login = async (req, res) => {
       });
     }
 
-    const isMatch = await bcryptjs.compare(password, account.password);
+    const isMatch = await bcrypt.compare(password, account.password);
 
     if (!isMatch) {
       return res.status(401).json({
@@ -146,7 +146,19 @@ export const login = async (req, res) => {
         message: "Incorrect password"
       });
     }
+if (role === "user" && account.isBanned) {
+  return res.status(403).json({
+    success: false,
+    message: "Your account is banned"
+  });
+}
 
+if (role === "admin" && !account.isActive) {
+  return res.status(403).json({
+    success: false,
+    message: "Admin account disabled"
+  });
+}
     const token = jwt.sign(
       {
         id: account._id,
@@ -157,11 +169,11 @@ export const login = async (req, res) => {
     );
 
     res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    });
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000
+});
 
     res.status(200).json({
       success: true,
@@ -188,4 +200,117 @@ export const logout = (req, res) => {
     success: true,
     message: "Logged out successfully"
   });
+};
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    let account =
+      (await User.findOne({ email })) ||
+      (await Admin.findOne({ email }));
+
+    if (!account) {
+      return res.json({
+        success: true,
+        message: "If email exists, reset link sent"
+      });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+
+    account.resetPasswordToken = hashedToken;
+    account.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+
+    await account.save({ validateBeforeSave: false });
+
+    const resetLink = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+
+    await sendResetPasswordMail({
+      userEmail: account.email,
+      userName: account.name,
+      resetLink
+    });
+
+    return res.json({
+      success: true,
+      message: "Reset password link sent to email"
+    });
+
+  } catch (error) {
+    console.error("FORGOT PASSWORD ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong"
+    });
+  }
+};
+
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { newPassword, confirmPassword } = req.body;
+
+    if (!newPassword || !confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Both passwords required"
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Passwords do not match"
+      });
+    }
+
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex");
+
+  
+    let account =
+      (await User.findOne({
+        resetPasswordToken: hashedToken,
+        resetPasswordExpire: { $gt: Date.now() }
+      }).select("+password")) ||
+      (await Admin.findOne({
+        resetPasswordToken: hashedToken,
+        resetPasswordExpire: { $gt: Date.now() }
+      }).select("+password"));
+
+    if (!account) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired token"
+      });
+    }
+
+    account.password = await bcrypt.hash(newPassword, 10);
+    account.resetPasswordToken = undefined;
+    account.resetPasswordExpire = undefined;
+
+    await account.save();
+
+    res.json({
+      success: true,
+      message: "Password reset successful"
+    });
+
+  } catch (error) {
+    console.error("RESET PASSWORD ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to reset password"
+    });
+  }
 };

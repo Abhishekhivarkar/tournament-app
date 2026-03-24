@@ -29,7 +29,8 @@ const userSchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: true
+      required: true,
+      select:false
     },
 
     role: {
@@ -72,6 +73,10 @@ const userSchema = new mongoose.Schema(
     },
     resetPasswordExpire:{
         type:Date
+    },
+    withdrawBalance:{
+      type:Number,
+      default:0
     }
   },
   { timestamps: true }

@@ -1,5 +1,7 @@
 import Tournament from "../models/Tournament.model.js";
 import User from "../models/User.model.js";
+import Transaction from "../models/Transaction.model.js"
+import mongoose from "mongoose"
 export const createTournament = async (req, res, next) => {
   try {
     const {
@@ -72,6 +74,7 @@ export const updateTournamentStatus = async (req, res, next) => {
       data: tournament
     });
   } catch (error) {
+    console.error("UPDATE TOURNAMENT STATUS ERROR",error)
     next(error);
   }
 };
@@ -107,6 +110,7 @@ export const cancelTournament = async (req, res, next) => {
       data: tournament
     });
   } catch (error) {
+    console.error("CANCLE TOURNAMENT ERROR : ",error)
     next(error);
   }
 };
@@ -130,6 +134,7 @@ export const getAllTournaments = async (req, res, next) => {
       data: tournaments
     });
   } catch (error) {
+    console.error("GET ALL TOURNAMENTS ERROR : ",error)
     next(error);
   }
 };
@@ -155,16 +160,18 @@ export const getTournamentById = async (req, res, next) => {
       data: tournament
     });
   } catch (error) {
+    console.error("GET TOURNAMENT BY ID ERROR : ",error)
     next(error);
   }
 };
 
 
 export const joinTournament = async (req, res, next) => {
+  const session = await mongoose.startSession();
+
   try {
     const { id } = req.params;
     const userId = req.user._id;
-
     const tournament = await Tournament.findById(id);
     if (!tournament) {
       return res.status(404).json({
@@ -187,12 +194,14 @@ export const joinTournament = async (req, res, next) => {
       });
     }
 
-    if (tournament.joinedPlayers.includes(userId)) {
-      return res.status(400).json({
-        success: false,
-        message: "You already joined this tournament"
-      });
-    }
+    if (tournament.joinedPlayers.some(
+  (playerId) => playerId.toString() === userId.toString()
+)) {
+  return res.status(400).json({
+    success: false,
+    message: "You already joined this tournament"
+  });
+}
 
     if (tournament.joinedPlayers.length >= tournament.maxPlayers) {
       return res.status(400).json({
@@ -216,18 +225,40 @@ export const joinTournament = async (req, res, next) => {
       });
     }
 
+    // 🔒 START ATOMIC TRANSACTION
+    session.startTransaction();
 
+    // Wallet deduct
     user.walletBalance -= tournament.entryFee;
-    await user.save();
+    user.totalMatches += 1
+    await user.save({ session });
 
+    // Transaction log
+    await Transaction.create(
+      [{
+        user: user._id,
+        type: "ENTRY_FEE",
+        amount: tournament.entryFee,
+        tournament: tournament._id,
+        status: "SUCCESS",
+        notes: "Tournament entry fee paid"
+      }],
+      { session }
+    );
 
+    // Join tournament
+    
     tournament.joinedPlayers.push(userId);
 
     if (tournament.joinedPlayers.length === tournament.maxPlayers) {
       tournament.status = "ongoing";
     }
 
-    await tournament.save();
+    await tournament.save({ session });
+
+    // COMMIT
+    await session.commitTransaction();
+    session.endSession();
 
     res.status(200).json({
       success: true,
@@ -239,6 +270,9 @@ export const joinTournament = async (req, res, next) => {
       }
     });
   } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error("JOIN TOURNAMENT ERROR:", error);
     next(error);
   }
 };
@@ -285,12 +319,15 @@ export const setRoomDetails = async (req, res, next) => {
       }
     });
   } catch (error) {
+    console.error("SET ROOM DETAILS : ",error)
     next(error);
   }
 };
 
 
 export const declareWinners = async (req, res, next) => {
+  const session =await mongoose.startSession()
+  session.startTransaction()
   try {
     const { id } = req.params;
     const { winners } = req.body;
@@ -338,10 +375,7 @@ export const declareWinners = async (req, res, next) => {
       );
 
       if (!isJoined) {
-        return res.status(400).json({
-          success: false,
-          message: "Winner must be a joined player"
-        });
+        throw new Error("Winner must be a joined player");
       }
 
       const prizeRule = tournament.prizeDistribution.find(
@@ -349,11 +383,8 @@ export const declareWinners = async (req, res, next) => {
       );
 
       if (!prizeRule) {
-        return res.status(400).json({
-          success: false,
-          message: `No prize rule for position ${winner.position}`
-        });
-      }
+  throw new Error(`No prize rule for position ${winner.position}`);
+}
 
       const winAmount =
         (prizePool * prizeRule.percentage) / 100;
@@ -362,10 +393,20 @@ export const declareWinners = async (req, res, next) => {
       if (!user) continue;
 
     
-      user.walletBalance += winAmount;
+      user.withdrawBalance += winAmount;
       user.totalWinAmount += winAmount;
-      await user.save();
-
+      user.totalWins += 1
+      await user.save({session});
+      
+      await Transaction.create([{
+        type:"WIN",
+        user:user._id,
+        tournament:tournament._id,
+        status:"SUCCESS",
+        amount:winAmount,
+        notes:`Prize for position ${winner.position}`
+      }],{session})
+      
       finalWinners.push({
         user: user._id,
         position: winner.position,
@@ -376,19 +417,21 @@ export const declareWinners = async (req, res, next) => {
     tournament.winners = finalWinners;
     tournament.status = "completed";
 
-    await tournament.save();
-
+    await tournament.save({session});
+await session.commitTransaction()
+session.endSession()
     res.status(200).json({
       success: true,
       message: "Winners declared successfully",
       data: tournament.winners
     });
   } catch (error) {
-    next(error);
-  }
-};
-
-
+  await session.abortTransaction();
+  session.endSession();
+  console.error("DECLARE WINNER ERROR:", error);
+  next(error);
+}
+}
 
 export const refundOnCancel = async (req, res, next) => {
   try {
@@ -423,9 +466,17 @@ export const refundOnCancel = async (req, res, next) => {
       if (!user) continue;
 
       user.walletBalance += tournament.entryFee;
-      user.totalWithdrawAmount =
-        (user.totalWithdrawAmount || 0); 
       await user.save();
+      
+      await Transaction.create({
+        user:user._id,
+        tournament:tournament._id,
+        amount:tournament.entryFee,
+        status:"SUCCESS",
+        type:"REFUND",
+        notes:"Tournament cancelled refund"
+      })
+
 
       refunds.push({
         userId: user._id,
@@ -442,7 +493,9 @@ export const refundOnCancel = async (req, res, next) => {
       refundedUsers: refunds.length,
       refunds
     });
+    
   } catch (error) {
+    console.error("REFUND ON CANCLE ERROR : ",error)
     next(error);
   }
 };

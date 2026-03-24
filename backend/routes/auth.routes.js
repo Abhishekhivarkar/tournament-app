@@ -1,4 +1,4 @@
-import {userRegister,adminRegister,login,logout} from "../controllers/auth.controller.js"
+import {userRegister,adminRegister,login,logout,forgotPassword,resetPassword} from "../controllers/auth.controller.js"
 import {validateBody} from "../middlewares/validate.middleware.js"
 import {userRegisterSchema,adminRegisterSchema,loginSchema} from "../validators/auth.validate.js"
 import express from "express"
@@ -11,4 +11,8 @@ router.post("/auth/admin-register",validateBody(adminRegisterSchema),adminRegist
 router.post("/auth/login",validateBody(loginSchema),login)
 
 router.post("/auth/logout",logout)
+
+router.post("/auth/forgot-password",forgotPassword)
+
+router.post("/auth/reset-password/:token",resetPassword)
 export default router

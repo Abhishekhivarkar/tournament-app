@@ -40,6 +40,23 @@ export const authMiddleware = async (req, res, next) => {
       });
     }
 
+
+if (decoded.role === "admin" && !account.isActive) {
+  return res.status(403).json({
+    success: false,
+    message: "Admin account disabled"
+  });
+}
+
+
+if (decoded.role === "user" && account.isBanned) {
+  return res.status(403).json({
+    success: false,
+    message: "User account banned"
+  });
+}
+
+
     req.user = account;
     req.user.role = decoded.role;
 

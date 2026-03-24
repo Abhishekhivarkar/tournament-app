@@ -23,7 +23,8 @@ const adminSchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: true
+      required: true,
+      select:false
     },
 
     role: {
@@ -41,6 +42,10 @@ const adminSchema = new mongoose.Schema(
     },
     resetPasswordExpire:{
         type:Date
+    },
+    secretKey:{
+      type:String,
+      required:true
     }
   },
   { timestamps: true }
