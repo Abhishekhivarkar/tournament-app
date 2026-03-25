@@ -5,55 +5,84 @@ import UserRegister from "./features/auth/pages/UserRegister"
 import AdminRegister from "./features/auth/pages/AdminRegister"
 
 import { Protected, PublicRoute } from "./features/auth/components/Protected"
+import ForgotPassword from "./features/auth/pages/ForgotPassword"
+import ResetPassword from "./features/auth/pages/ResetPassword"
+import CheckEmail from "./features/auth/pages/CheckEmail"
+import UserDashboard from "./features/user_dashboard/pages/UserDashboard"
 
-const UserDashboard = () => <div className="text-white p-6">Dashboard</div>
 const AdminDashboard = () => <div className="text-white p-6">Admin Dashboard</div>
 
 export const router = createBrowserRouter([
 
- {
-  path: "/login",
-  element: (
-   <PublicRoute>
-    <Login />
-   </PublicRoute>
-  )
- },
+    {
+        path: "/login",
+        element: (
+            <PublicRoute>
+                <Login />
+            </PublicRoute>
+        )
+    },
+    {
+        path: "/check-email",
+        element: (
+            <PublicRoute>
+                <CheckEmail />
+            </PublicRoute>
+        )
+    },
+    {
+        path: "/register/user",
+        element: (
+            <PublicRoute>
+                <UserRegister />
+            </PublicRoute>
+        )
+    },
 
- {
-  path: "/register/user",
-  element: (
-   <PublicRoute>
-    <UserRegister />
-   </PublicRoute>
-  )
- },
+    {
+        path: "/register/admin",
+        element: (
+            <PublicRoute>
+                <AdminRegister />
+            </PublicRoute>
+        )
+    },
+    {
+        path: "/forgot-password",
+        element: (
+            <PublicRoute>
+                <ForgotPassword />
+            </PublicRoute>
+        )
+    },
 
- {
-  path: "/register/admin",
-  element: (
-   <PublicRoute>
-    <AdminRegister />
-   </PublicRoute>
-  )
- },
+    {
+        path: "/reset-password/:token",
+        element: (
+            <PublicRoute>
+                <ResetPassword />
+            </PublicRoute>
+        )
+    },
+   
 
- {
-  path: "/user/dashboard",
-  element: (
-   <Protected>
-    <UserDashboard />
-   </Protected>
-  )
- },
+    {
+        path: "/admin/dashboard",
+        element: (
+            <Protected>
+                <AdminDashboard />
+            </Protected>
+        )
+    },
 
+    // user dashboard routes
  {
-  path: "/admin/dashboard",
-  element: (
-   <Protected>
-    <AdminDashboard />
-   </Protected>
-  )
- }
+        path: "/user/dashboard",
+        element: (
+            <Protected>
+                <UserDashboard />
+            </Protected>
+        )
+    },
 
 ])

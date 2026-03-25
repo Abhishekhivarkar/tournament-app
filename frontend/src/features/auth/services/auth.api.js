@@ -72,8 +72,10 @@ export const registerAdmin = async ({
 
  } catch (err) {
 
-  console.log(err.response?.data?.message)
-  return null
+  return{
+    error:true,
+    message:err.response?.data?.message
+  }
 
  }
 
@@ -98,8 +100,10 @@ export const login = async ({ email, password }) => {
 
  } catch (err) {
 
-  console.log(err.response?.data?.message)
-  return null
+  return{
+    error:true,
+    message:err.response?.data?.message
+  }
 
  }
 
@@ -119,8 +123,10 @@ export const logout = async () => {
 
  } catch (err) {
 
-  console.log(err.response?.data?.message)
-  return null
+  return{
+    error:true,
+    message:err.response?.data?.message
+  }
 
  }
 
@@ -140,8 +146,10 @@ export const forgotPassword = async ({ email }) => {
 
  } catch (err) {
 
-  console.log(err.response?.data?.message)
-  return null
+  return{
+    error:true,
+    message:err.response?.data?.message
+  }
 
  }
 
@@ -169,8 +177,10 @@ export const resetPassword = async ({
 
  } catch (err) {
 
-  console.log(err.response?.data?.message)
-  return null
+  return{
+    error:true,
+    message:err.response?.data?.message
+  }
 
  }
 
@@ -192,7 +202,10 @@ export const getMe = async () => {
 
   } catch {
 
-   return null
+   return{
+    error:true,
+    message:err.response?.data?.message
+  }
 
   }
 

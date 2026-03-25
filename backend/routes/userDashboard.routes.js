@@ -10,5 +10,5 @@ const router = express.Router()
 
 router.get("/user/dashboard/profile",authMiddleware,roleMiddleware(ROLE.USER),getProfile)
 
-router.get("/user/dashboard/:id/joined-matches",authMiddleware,roleMiddleware(ROLE.USER),getJoinedMatches)
+router.get("/user/dashboard/joined-matches",authMiddleware,roleMiddleware(ROLE.USER),getJoinedMatches)
 export default router
