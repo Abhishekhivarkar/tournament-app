@@ -1,7 +1,11 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { useAuth } from "../hooks/useAuth.js";
 
 export default function Login() {
+
+  const { handleLogin } = useAuth();
+
   const [form, setForm] = useState({
     email: "",
     password: ""
@@ -13,39 +17,45 @@ export default function Login() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+
   const handleSubmit = async (e) => {
+
     e.preventDefault();
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5001/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(form)
-      });
 
-      const data = await res.json();
+      const role = await handleLogin(form);
 
-      if (!res.ok) {
-        toast.error(data.message || "Login failed");
+      if (!role) {
+        toast.error("Login failed");
         return;
       }
 
       toast.success("Login successful 🎮");
 
       setTimeout(() => {
-        data.role === "admin"
-          ? (window.location.href = "/admin/dashboard")
-          : (window.location.href = "/dashboard");
+
+        if (role === "admin") {
+          window.location.href = "/admin/dashboard";
+        } else {
+          window.location.href = "/user/dashboard";
+        }
+
       }, 800);
 
     } catch {
+
       toast.error("Server error. Try again");
+
     } finally {
+
       setLoading(false);
+
     }
+
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0b0f19] via-[#0e1324] to-[#020617] text-white">
@@ -103,6 +113,7 @@ export default function Login() {
           >
             {loading ? "Logging in..." : "Login"}
           </button>
+
         </form>
 
         {/* Register Section */}
@@ -121,6 +132,7 @@ export default function Login() {
             </a>
           </p>
         </div>
+
       </div>
     </div>
   );

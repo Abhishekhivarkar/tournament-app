@@ -1,7 +1,11 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { useAuth } from "../hooks/useAuth.js";
 
 export default function AdminRegister() {
+
+  const { handleRegisterAdmin } = useAuth();
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -16,36 +20,37 @@ export default function AdminRegister() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5001/api/auth/admin-register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(form)
-      });
 
-      const data = await res.json();
+      const data = await handleRegisterAdmin(form);
 
-      if (!res.ok) {
-        toast.error(data.message || "Admin registration failed");
-        return;
-      }
+if (!data || data.error) {
+  toast.error(data?.message || "Admin registration failed");
+  return;
+}
 
-      toast.success("Admin registered successfully 👑");
+toast.success("Admin registered successfully 👑");
+
       setTimeout(() => {
         window.location.href = "/login";
       }, 1000);
 
-    } catch {
+    } catch (err) {
+
       toast.error("Server error");
+
     } finally {
+
       setLoading(false);
+
     }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#020617] via-[#0e1324] to-[#0b0f19] text-white px-4">
@@ -77,6 +82,7 @@ export default function AdminRegister() {
           >
             {loading ? "Creating Admin..." : "Register Admin"}
           </button>
+
         </form>
 
         <p className="text-sm text-gray-400 text-center mt-5">
@@ -85,6 +91,7 @@ export default function AdminRegister() {
             Login
           </a>
         </p>
+
       </div>
     </div>
   );

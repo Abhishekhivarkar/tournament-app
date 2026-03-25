@@ -1,7 +1,11 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { useAuth } from "../hooks/useAuth.js";
 
 export default function UserRegister() {
+
+  const { handleRegisterUser } = useAuth();
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -16,36 +20,39 @@ export default function UserRegister() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+
   const handleSubmit = async (e) => {
+
     e.preventDefault();
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5001/api/auth/user-register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(form)
-      });
 
-      const data = await res.json();
+      const data = await handleRegisterUser(form);
 
-      if (!res.ok) {
-        toast.error(data.message || "Registration failed");
-        return;
-      }
+if (!data || data.error) {
+  toast.error(data?.message || "Registration failed");
+  return;
+}
 
-      toast.success("Registration successful 🎮");
+toast.success("Registration successful 🎮");
+
       setTimeout(() => {
         window.location.href = "/login";
       }, 1000);
 
     } catch {
+
       toast.error("Server error");
+
     } finally {
+
       setLoading(false);
+
     }
+
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0b0f19] via-[#0e1324] to-[#020617] text-white px-4">
@@ -55,6 +62,7 @@ export default function UserRegister() {
         <h2 className="text-3xl font-bold text-blue-400 text-center mb-2">
           Player Registration
         </h2>
+
         <p className="text-gray-400 text-center mb-6">
           Join BattleNex BGMI Tournaments
         </p>
@@ -80,6 +88,7 @@ export default function UserRegister() {
           >
             {loading ? "Registering..." : "Register"}
           </button>
+
         </form>
 
         <p className="text-sm text-gray-400 text-center mt-5">
@@ -88,6 +97,7 @@ export default function UserRegister() {
             Login
           </a>
         </p>
+
       </div>
     </div>
   );

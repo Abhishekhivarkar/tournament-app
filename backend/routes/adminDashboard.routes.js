@@ -1,4 +1,4 @@
-import {getAllUsers,getAllTournaments,getRegisteredUsers,getTotalCollectionOfTournament} from "../controllers/adminDashboard.controller.js"
+import {getAllUsers,getAllTournaments,getRegisteredUsers,getTotalCollectionOfTournament,getWithdrawRequests, getAdminProfile} from "../controllers/adminDashboard.controller.js"
 import{ authMiddleware} from "../middlewares/auth.middleware.js"
 import {roleMiddleware} from "../middlewares/role.middleware.js"
 import {ROLE} from "../config/role.js"
@@ -20,5 +20,11 @@ router.get(
   roleMiddleware("admin"),
   getWithdrawRequests
 );
+router.get(
+  "/admin/dashboard/profile",
+  authMiddleware,
+  roleMiddleware(ROLE.ADMIN),
+  getAdminProfile
+)
 export default router
 
