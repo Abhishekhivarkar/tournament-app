@@ -16,7 +16,7 @@ export const getRegisteredUsersService = async (tournamentId) => {
 
   const tournament = await Tournament.findById(tournamentId).populate(
     "joinedPlayers",
-    "name email phoneNumber walletBalance isBanned"
+    "name email phoneNumber walletBalance isBanned bgmiGameId"
   );
 
   if (!tournament) {

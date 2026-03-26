@@ -9,15 +9,15 @@ const router = express.Router()
 router.get("/admin/dashboard/all-users",authMiddleware,roleMiddleware(ROLE.ADMIN),getAllUsers)
 
 router.get("/admin/dashboard/all-tournaments",authMiddleware,roleMiddleware(ROLE.ADMIN),getAllTournaments)
-
+ 
 router.get("/admin/dashboard/:id/players",authMiddleware,roleMiddleware(ROLE.ADMIN),getRegisteredUsers)
 
 router.get("/admin/dashboard/:id/cash",authMiddleware,roleMiddleware(ROLE.ADMIN),getTotalCollectionOfTournament)
 
 router.get(
-  "/withdraw-requests",
+  "/admin/withdraw-requests",
   authMiddleware,
-  roleMiddleware("admin"),
+  roleMiddleware(ROLE.ADMIN),
   getWithdrawRequests
 );
 router.get(

@@ -92,7 +92,7 @@ export const getAdminProfile = async (req, res, next) => {
       data: admin
     })
 
-  } catch (error) {
+  } catch (error) { 
 
     console.log("GET ADMIN PROFILE ERROR:", error)
     next(error)

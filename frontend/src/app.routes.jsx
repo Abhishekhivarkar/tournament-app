@@ -9,9 +9,14 @@ import ForgotPassword from "./features/auth/pages/ForgotPassword"
 import ResetPassword from "./features/auth/pages/ResetPassword"
 import CheckEmail from "./features/auth/pages/CheckEmail"
 import UserDashboard from "./features/user_dashboard/pages/UserDashboard"
-
-const AdminDashboard = () => <div className="text-white p-6">Admin Dashboard</div>
-
+import AdminDashboard from "./features/admin-dashboard/pages/AdminDashboard"
+import Users from "./features/admin-dashboard/pages/Users"
+import AdminTournaments from "./features/admin-dashboard/pages/AdminTournaments"
+import TournamentPlayers from "./features/admin-dashboard/pages/TournamentPlayers"
+import TournamentDetails from "./features/admin-dashboard/pages/TournamentDetails"
+import Tournaments from "./features/tournament/pages/Tournaments"
+import CreateTournament from "./features/admin-dashboard/pages/CreateTournament"
+import WithdrawRequests from "./features/admin-dashboard/pages/WithdrawRequests"
 export const router = createBrowserRouter([
 
     {
@@ -64,7 +69,7 @@ export const router = createBrowserRouter([
             </PublicRoute>
         )
     },
-   
+
 
     {
         path: "/admin/dashboard",
@@ -76,7 +81,7 @@ export const router = createBrowserRouter([
     },
 
     // user dashboard routes
- {
+    {
         path: "/user/dashboard",
         element: (
             <Protected>
@@ -84,5 +89,66 @@ export const router = createBrowserRouter([
             </Protected>
         )
     },
+
+    {
+        path: "/admin/dashboard/all-users",
+        element: (
+            <Protected>
+                <Users />
+            </Protected>
+        )
+    },
+
+    {
+        path: "/admin/tournaments",
+        element: (
+            <Protected>
+                <AdminTournaments />
+            </Protected>
+        )
+    },
+
+    {
+        path: "/admin/tournaments/:id/players",
+        element: (
+            <Protected>
+                <TournamentPlayers />
+            </Protected>
+        )
+    },
+
+    {
+        path: "/admin/tournaments/:id",
+        element: (
+            <Protected>
+                <TournamentDetails />
+            </Protected>
+        )
+    },
+    {
+        path: "/tournaments",
+        element: (
+            <Protected>
+                <Tournaments />
+            </Protected>
+        )
+    },
+    {
+ path:"/admin/create-tournament",
+ element:(
+  <Protected>
+   <CreateTournament/>
+  </Protected>
+ )
+},
+
+{
+ path:"/admin/withdraw-requests",
+ element:(
+  <Protected>
+   <WithdrawRequests/>
+  </Protected>
+ )
+}
 
 ])
