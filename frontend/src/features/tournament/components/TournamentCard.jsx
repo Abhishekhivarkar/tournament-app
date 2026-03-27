@@ -18,6 +18,9 @@ export default function TournamentCard({ tournament }) {
 
   }
 
+  const playersJoined = tournament.joinedPlayers?.length || 0
+  const isFull = playersJoined >= tournament.maxPlayers
+
   return (
 
     <div className="bg-[#0f172a] border border-blue-900/40 rounded-xl p-5 flex flex-col gap-3">
@@ -39,7 +42,7 @@ export default function TournamentCard({ tournament }) {
 
       {/* Players */}
       <p className="text-gray-400 text-sm">
-        Players: {tournament.joinedPlayers?.length || 0}/{tournament.maxPlayers}
+        Players: {playersJoined}/{tournament.maxPlayers}
       </p>
 
       {/* Start time */}
@@ -48,17 +51,56 @@ export default function TournamentCard({ tournament }) {
       </p>
 
       {/* Status */}
-      <span className="text-sm text-yellow-400">
-        {tournament.status}
+      <span
+        className={`text-sm font-semibold ${
+          tournament.status === "upcoming"
+            ? "text-yellow-400"
+            : tournament.status === "ongoing"
+            ? "text-green-400"
+            : "text-red-400"
+        }`}
+      >
+        Status: {tournament.status}
       </span>
+
+      {/* Room details (shown when cron releases room) */}
+      <div className="bg-[#020617] border border-green-900/40 rounded-lg p-3 mt-2">
+
+  <p className="text-green-400 text-sm font-semibold mb-1">
+    Room Details
+  </p>
+
+  <p className="text-gray-300 text-sm">
+    Room ID:{" "}
+    <span className="text-white">
+      {tournament.roomReleased
+        ? tournament.roomId
+        : "Available 10 minutes before match"}
+    </span>
+  </p>
+
+  <p className="text-gray-300 text-sm">
+    Password:{" "}
+    <span className="text-white">
+      {tournament.roomReleased
+        ? tournament.roomPassword
+        : "Available 10 minutes before match"}
+    </span>
+  </p>
+
+</div>
 
       {/* Join button */}
       <button
-        disabled={loading || tournament.status !== "upcoming"}
+        disabled={
+          loading ||
+          tournament.status !== "upcoming" ||
+          isFull
+        }
         onClick={handleJoin}
         className="mt-2 bg-gradient-to-r from-blue-600 to-cyan-500 py-2 rounded-lg font-semibold disabled:opacity-50"
       >
-        Join Tournament
+        {isFull ? "Tournament Full" : "Join Tournament"}
       </button>
 
     </div>

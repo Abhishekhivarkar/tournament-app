@@ -13,6 +13,10 @@ export const createTournamentSchema = Joi.object({
 
   prizePoolPercentage: Joi.number().min(50).max(95).default(85),
 
+  roomId: Joi.string().trim().min(3).optional(),
+
+  roomPassword: Joi.string().trim().min(3).optional(),
+
   prizeDistribution: Joi.array()
     .items(
       Joi.object({

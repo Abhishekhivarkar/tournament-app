@@ -5,24 +5,28 @@ import mongoose from "mongoose";
 import { scheduleRoomRelease, scheduleTournamentStart } from "../utils/tournamentScheduler.js";
 
 export const createTournamentService = async (data, adminId) => {
+console.log("CREATE BODY:", data)
   const tournament = await Tournament.create({
     title: data.title,
-    entryFee: data.entryFee,
-    maxPlayers: data.maxPlayers,
-    prizePoolPercentage: data.prizePoolPercentage,
+    entryFee: Number(data.entryFee),
+    maxPlayers: Number(data.maxPlayers),
+    prizePoolPercentage: Number(data.prizePoolPercentage),
     prizeDistribution: data.prizeDistribution,
-    startTime: data.startTime,
+    startTime: new Date(data.startTime),
     map: data.map,
     createdBy: adminId,
-    roomId: data.roomId,
-    roomPassword: data.roomPassword
+
+    roomId: data.roomId ? String(data.roomId) : null,
+    roomPassword: data.roomPassword ? String(data.roomPassword) : null
   });
 
-  scheduleTournamentStart(tournament._id,tournament.startTime)
+  scheduleTournamentStart(tournament._id, tournament.startTime)
 
   scheduleRoomRelease(
-    tournament._id,new Date(tournament.startTime.getTime()- 10 * 60 * 1000)
+    tournament._id,
+    new Date(tournament.startTime.getTime() - 10 * 60 * 1000)
   )
+
   return tournament;
 };
 
@@ -51,7 +55,7 @@ export const updateTournamentStatusService = async (id, status) => {
 
   scheduleTournamentStart(tournament._id,tournament.startTime)
 
-  shceduleRoomRelease(
+  scheduleRoomRelease(
     tournament._id,
     new Date(tournament.startTime.getTime() - 10 * 60 * 1000)
   )
@@ -190,11 +194,14 @@ export const joinTournamentService = async (id, userId) => {
 
   } catch (error) {
 
-    await session.abortTransaction();
-    session.endSession();
-
-    throw error;
+  if (session.inTransaction()) {
+    await session.abortTransaction()
   }
+
+  session.endSession()
+
+  throw error
+}
 };
 
 export const setRoomDetailsService = async (id, data) => {
@@ -329,10 +336,15 @@ export const declareWinnersService = async (id, winners) => {
 
     return tournament.winners;
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-    throw error;
+
+  if (session.inTransaction()) {
+    await session.abortTransaction()
   }
+
+  session.endSession()
+
+  throw error
+}
 };
 
 export const refundOnCancelService = async (id) => {

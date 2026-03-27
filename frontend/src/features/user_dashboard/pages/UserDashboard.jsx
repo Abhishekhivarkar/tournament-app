@@ -15,7 +15,6 @@ export default function UserDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0b0f19] via-[#0e1324] to-[#020617] text-white p-6">
-
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}
