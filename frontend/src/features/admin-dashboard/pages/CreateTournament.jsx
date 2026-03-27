@@ -14,7 +14,9 @@ export default function CreateTournament() {
     entryFee: "",
     maxPlayers: 100,
     prizePoolPercentage: 85,
-    startTime: ""
+    startTime: "",
+    roomId: "",
+  roomPassword: ""
   })
 
   const [loading,setLoading] = useState(false)
@@ -113,6 +115,22 @@ name="startTime"
 value={form.startTime}
 onChange={handleChange}
 required
+className="w-full p-3 bg-[#020617] border border-blue-900/40 rounded"
+/>
+
+<input
+name="roomId"
+placeholder="Room ID"
+value={form.roomId}
+onChange={handleChange}
+className="w-full p-3 bg-[#020617] border border-blue-900/40 rounded"
+/>
+
+<input
+name="roomPassword"
+placeholder="Room Password"
+value={form.roomPassword}
+onChange={handleChange}
 className="w-full p-3 bg-[#020617] border border-blue-900/40 rounded"
 />
 

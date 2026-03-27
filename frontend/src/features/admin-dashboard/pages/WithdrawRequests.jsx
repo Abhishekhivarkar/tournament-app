@@ -7,12 +7,16 @@ export default function WithdrawRequests() {
   const {
     withdrawRequests,
     loading,
-    handleGetWithdrawRequests
+    handleGetWithdrawRequests,
+    handleApprove,
+    handleReject
   } = useAdminDashboard()
 
   useEffect(()=>{
     handleGetWithdrawRequests()
   },[])
+
+  
 
   return (
 
@@ -84,7 +88,23 @@ export default function WithdrawRequests() {
                     <td className="p-4 text-gray-400">
                       {new Date(req.createdAt).toLocaleString()}
                     </td>
+<td className="p-4 flex gap-2">
 
+<button
+className="px-3 py-1 bg-green-600 rounded text-sm"
+onClick={()=>handleApprove(req._id)}
+>
+Approve
+</button>
+
+<button
+className="px-3 py-1 bg-red-600 rounded text-sm"
+onClick={()=>handleReject(req._id)}
+>
+Reject
+</button>
+
+</td>
                   </tr>
 
                 ))}

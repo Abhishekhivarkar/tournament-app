@@ -17,6 +17,8 @@ import TournamentDetails from "./features/admin-dashboard/pages/TournamentDetail
 import Tournaments from "./features/tournament/pages/Tournaments"
 import CreateTournament from "./features/admin-dashboard/pages/CreateTournament"
 import WithdrawRequests from "./features/admin-dashboard/pages/WithdrawRequests"
+import Withdraw from "./features/transaction/pages/Withdraw"
+import TransactionHistory from "./features/transaction/pages/TransactionHistory"
 export const router = createBrowserRouter([
 
     {
@@ -126,7 +128,7 @@ export const router = createBrowserRouter([
         )
     },
     {
-        path: "/tournaments",
+        path: "/",
         element: (
             <Protected>
                 <Tournaments />
@@ -134,21 +136,37 @@ export const router = createBrowserRouter([
         )
     },
     {
- path:"/admin/create-tournament",
- element:(
-  <Protected>
-   <CreateTournament/>
-  </Protected>
- )
-},
+        path: "/admin/create-tournament",
+        element: (
+            <Protected>
+                <CreateTournament />
+            </Protected>
+        )
+    },
 
-{
- path:"/admin/withdraw-requests",
- element:(
-  <Protected>
-   <WithdrawRequests/>
-  </Protected>
- )
-}
+    {
+        path: "/admin/withdraw-requests",
+        element: (
+            <Protected>
+                <WithdrawRequests />
+            </Protected>
+        )
+    },
+    {
+        path: "/withdraw",
+        element: (
+            <Protected>
+                <Withdraw />
+            </Protected>
+        )
+    },
 
+    {
+        path: "/transactions",
+        element: (
+            <Protected>
+                <TransactionHistory />
+            </Protected>
+        )
+    }
 ])

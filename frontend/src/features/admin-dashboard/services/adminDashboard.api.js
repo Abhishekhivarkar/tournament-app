@@ -117,3 +117,24 @@ export const getAdminProfile = async () =>{
 
   }
 }
+
+export const updateWithdrawStatus = async (id,status) => {
+
+  try{
+
+    const res = await api.patch(`/transaction/withdraw/${id}/status`,{
+      status
+    })
+
+    return res.data
+
+  }catch(err){
+
+    return{
+      err:true,
+      message:err.response?.data?.message
+    }
+
+  }
+
+}

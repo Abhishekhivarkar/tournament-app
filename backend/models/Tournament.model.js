@@ -112,6 +112,10 @@ const tournamentSchema = new mongoose.Schema(
       type: String,
       default: null
     },
+    roomReleased: {
+  type: Boolean,
+  default: false
+},
 
     winners: {
       type: [winnerSchema],

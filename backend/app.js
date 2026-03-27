@@ -7,6 +7,7 @@ import tournamentRoutes from "./routes/tournament.routes.js"
 import { errorMiddleware } from "./middlewares/error.middleware.js"
 import adminDashboardRoutes from "./routes/adminDashboard.routes.js"
 import userDashboardRoutes from "./routes/userDashboard.routes.js"
+import transactionRoutes from "./routes/transaction.routes.js"
 const app = express();
 app.disable("x-powered-by");
 app.use(cookieParser())
@@ -27,6 +28,7 @@ app.use("/api",authRoutes)
 app.use("/api",tournamentRoutes)
 app.use("/api",userDashboardRoutes)
 app.use("/api",adminDashboardRoutes)
+app.use("/api",transactionRoutes)
 app.get("/health", (req, res) => {
   res.status(200).json({
     success: true,

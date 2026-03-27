@@ -1,9 +1,9 @@
 import { useEffect } from "react"
 import { useAuth } from "../../auth/hooks/useAuth"
 import { useUserDashboard } from "../hooks/useUserDashboard"
-
+import { useNavigate } from "react-router-dom"
 export default function UserDashboard() {
-
+  const navigate = useNavigate()
   const { user, handleLogout } = useAuth()
   const { joinedMatches, loading, handleGetJoinedMatches } = useUserDashboard()
 
@@ -20,23 +20,39 @@ export default function UserDashboard() {
 
         {/* Header */}
         <div className="mb-8 flex justify-between items-center">
-            <div className="flex flex-col ">
-          <h1 className="text-3xl font-bold text-blue-400">
-            Welcome {user?.name}
-          </h1>
+          <div className="flex flex-col ">
+            <h1 className="text-3xl font-bold text-blue-400">
+              Welcome {user?.name}
+            </h1>
 
-          <p className="text-gray-400">
-            Manage your tournaments and matches
-          </p>
+            <p className="text-gray-400">
+              Manage your tournaments and matches
+            </p>
           </div>
 
-          <div>
-          <button
-  onClick={handleLogout}
-  className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-semibold"
->
-  Logout
-</button>
+        <div className="flex gap-3">
+
+  <button
+    onClick={()=>navigate("/withdraw")}
+    className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-semibold"
+  >
+    Withdraw
+  </button>
+
+  <button
+    onClick={()=>navigate("/transactions")}
+    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-semibold"
+  >
+    History
+  </button>
+
+  <button
+    onClick={handleLogout}
+    className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-semibold"
+  >
+    Logout
+  </button>
+
 </div>
         </div>
 
@@ -64,6 +80,12 @@ export default function UserDashboard() {
             </p>
           </div>
 
+          <div className="bg-[#0f172a] p-6 rounded-xl border border-blue-900/40">
+            <h3 className="text-gray-400 text-sm">Withdraw Balance</h3>
+            <p className="text-3xl font-bold text-purple-400">
+              ₹{user?.withdrawBalance || 0}
+            </p>
+          </div>
         </div>
 
         {/* Matches */}

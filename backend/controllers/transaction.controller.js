@@ -1,3 +1,4 @@
+import { updateWithdrawStatusService } from "../services/tournament.service.js";
 import {
   requestWithdrawService,
   getMyTransactionsService,
@@ -33,3 +34,24 @@ export const getMyTransactions = async (req, res, next) => {
     next(error);
   }
 };
+
+
+export const updateWithdrawStatus = async (req, res, next) => {
+
+  try {
+
+    const { id } = req.params
+    const { status } = req.body
+
+    const transaction = await updateWithdrawStatusService(id, status)
+
+    res.status(200).json({
+      success: true,
+      data: transaction
+    })
+
+  } catch (error) {
+    next(error)
+  }
+
+}

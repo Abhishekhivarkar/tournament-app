@@ -2,6 +2,7 @@ import Tournament from "../models/Tournament.model.js";
 import User from "../models/User.model.js";
 import Transaction from "../models/Transaction.model.js";
 import mongoose from "mongoose";
+import { scheduleRoomRelease, scheduleTournamentStart } from "../utils/tournamentScheduler.js";
 
 export const createTournamentService = async (data, adminId) => {
   const tournament = await Tournament.create({
@@ -13,7 +14,15 @@ export const createTournamentService = async (data, adminId) => {
     startTime: data.startTime,
     map: data.map,
     createdBy: adminId,
+    roomId: data.roomId,
+    roomPassword: data.roomPassword
   });
+
+  scheduleTournamentStart(tournament._id,tournament.startTime)
+
+  scheduleRoomRelease(
+    tournament._id,new Date(tournament.startTime.getTime()- 10 * 60 * 1000)
+  )
   return tournament;
 };
 
@@ -22,11 +31,6 @@ export const updateTournamentStatusService = async (id, status) => {
 
   status = status?.toLowerCase();
 
-//   if (!allowed.includes(status)) {
-//     const err = new Error("Invalid status");
-//     err.statusCode = 400;
-//     throw err;
-//   }
 
   const tournament = await Tournament.findById(id);
 
@@ -45,6 +49,12 @@ export const updateTournamentStatusService = async (id, status) => {
   tournament.status = status;
   await tournament.save();
 
+  scheduleTournamentStart(tournament._id,tournament.startTime)
+
+  shceduleRoomRelease(
+    tournament._id,
+    new Date(tournament.startTime.getTime() - 10 * 60 * 1000)
+  )
   return tournament;
 };
 
@@ -168,11 +178,6 @@ export const joinTournamentService = async (id, userId) => {
       ],
       { session }
     );
-
-    if (updatedTournament.joinedPlayers.length === updatedTournament.maxPlayers) {
-      updatedTournament.status = "ongoing";
-      await updatedTournament.save({ session });
-    }
 
     await session.commitTransaction();
     session.endSession();
@@ -384,3 +389,57 @@ export const refundOnCancelService = async (id) => {
     refunds,
   };
 };
+
+
+export const updateWithdrawStatusService = async (transactionId, status) => {
+
+  const session = await mongoose.startSession()
+
+  try {
+
+    const transaction = await Transaction.findById(transactionId)
+
+    if (!transaction) {
+      const err = new Error("Transaction not found")
+      err.statusCode = 404
+      throw err
+    }
+
+    if (transaction.status !== "PENDING") {
+      const err = new Error("Transaction already processed")
+      err.statusCode = 400
+      throw err
+    }
+
+    const user = await User.findById(transaction.user)
+
+    session.startTransaction()
+
+    if (status === "FAILED") {
+
+      // refund money
+      user.withdrawBalance += transaction.amount
+      await user.save({ session })
+
+    }
+
+    transaction.status = status
+    await transaction.save({ session })
+
+    await session.commitTransaction()
+    session.endSession()
+
+    return transaction
+
+  } catch (error) {
+
+    if (session.inTransaction()) {
+      await session.abortTransaction()
+    }
+
+    session.endSession()
+    throw error
+
+  }
+
+}

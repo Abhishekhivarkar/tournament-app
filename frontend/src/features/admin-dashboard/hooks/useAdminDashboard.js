@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import toast from "react-hot-toast";
 import { AdminDashboardContext } from "../AdminDashboard.context";
 import {
   getAllTournaments,
@@ -6,6 +7,7 @@ import {
   getRegisteredUsers,
   getTotalCollectionOfTournament,
   getWithdrawRequests,
+  updateWithdrawStatus,
 } from "../services/adminDashboard.api";
 
 export const useAdminDashboard = () => {
@@ -155,7 +157,36 @@ export const useAdminDashboard = () => {
     }
 
   };
+  const handleApprove = async (id) => {
 
+  const res = await updateWithdrawStatus(id,"SUCCESS")
+
+  if(!res || res.err){
+    toast.error(res?.message || "Failed")
+    return
+  }
+
+  toast.success("Withdraw approved")
+
+  handleGetWithdrawRequests()
+
+}
+
+
+const handleReject = async (id) => {
+
+  const res = await updateWithdrawStatus(id,"FAILED")
+
+  if(!res || res.err){
+    toast.error(res?.message || "Failed")
+    return
+  }
+
+  toast.success("Withdraw rejected")
+
+  handleGetWithdrawRequests()
+
+}
   return {
     loading,
     users,
@@ -168,6 +199,8 @@ export const useAdminDashboard = () => {
     handleGetRegisteredUsers,
     handleGetWithdrawRequests,
     handleGetTotalCollectionOfTournaments,
+    handleApprove,
+    handleReject
   };
 
 };

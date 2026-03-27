@@ -3,9 +3,11 @@ import User from "../models/User.model.js";
 import mongoose from "mongoose";
 
 export const requestWithdrawService = async (userId, amount) => {
+
   const session = await mongoose.startSession();
 
   try {
+
     if (amount <= 0) {
       const err = new Error("Invalid withdrawal amount");
       err.statusCode = 400;
@@ -14,16 +16,31 @@ export const requestWithdrawService = async (userId, amount) => {
 
     const user = await User.findById(userId);
 
-    if (!user || user.walletBalance < amount) {
-      const err = new Error("Insufficient wallet balance");
+    if (!user) {
+      const err = new Error("User not found");
+      err.statusCode = 404;
+      throw err;
+    }
+
+    // Minimum withdraw rule
+    if (user.withdrawBalance < 500) {
+      const err = new Error("Minimum withdraw balance must be 500");
+      err.statusCode = 400;
+      throw err;
+    }
+
+    // Insufficient balance check
+    if (user.withdrawBalance < amount) {
+      const err = new Error("Insufficient withdraw balance");
       err.statusCode = 400;
       throw err;
     }
 
     session.startTransaction();
 
-    user.walletBalance -= amount;
+    user.withdrawBalance -= amount;
     user.totalWithdrawAmount += amount;
+
     await user.save({ session });
 
     await Transaction.create(
@@ -33,23 +50,26 @@ export const requestWithdrawService = async (userId, amount) => {
           type: "WITHDRAW",
           amount,
           status: "PENDING",
-          notes: "Withdrawal request",
-        },
+          notes: "Withdrawal request"
+        }
       ],
-      { session },
+      { session }
     );
 
     await session.commitTransaction();
     session.endSession();
 
     return true;
+
   } catch (error) {
+
     if (session.inTransaction()) {
       await session.abortTransaction();
     }
 
     session.endSession();
     throw error;
+
   }
 };
 

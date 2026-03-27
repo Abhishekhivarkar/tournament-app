@@ -3,14 +3,15 @@ import { useParams } from "react-router-dom"
 import AdminLayout from "../components/AdminLayout"
 import { useAdminDashboard } from "../hooks/useAdminDashboard"
 import {
-  setRoomDetails,
   declareWinners,
   cancelTournament
 } from "../../tournament/services/tournament.api"
 import toast from "react-hot-toast"
 
 export default function TournamentDetails() {
-
+  const [firstWinner,setFirstWinner] = useState("")
+const [secondWinner,setSecondWinner] = useState("")
+const [thirdWinner,setThirdWinner] = useState("")
   const { id } = useParams()
 
   const {
@@ -18,51 +19,54 @@ export default function TournamentDetails() {
     handleGetTotalCollectionOfTournaments
   } = useAdminDashboard()
 
-  const [roomId,setRoomId] = useState("")
-  const [roomPassword,setRoomPassword] = useState("")
+  // const [roomId,setRoomId] = useState("")
+  // const [roomPassword,setRoomPassword] = useState("")
 
-  const [status,setStatus] = useState("upcoming")
+  // const [status,setStatus] = useState("upcoming")
 
-  const [winnerUserId,setWinnerUserId] = useState("")
-  const [winnerPosition,setWinnerPosition] = useState("")
+  // const [winnerUserId,setWinnerUserId] = useState("")
+  // const [winnerPosition,setWinnerPosition] = useState("")
 
   useEffect(()=>{
     handleGetTotalCollectionOfTournaments(id)
   },[])
 
-  const handleRoomUpdate = async ()=>{
+  // const handleRoomUpdate = async ()=>{
 
-    const data = await setRoomDetails(id,{
-      roomId,
-      roomPassword
-    })
+  //   const data = await setRoomDetails(id,{
+  //     roomId,
+  //     roomPassword
+  //   })
 
-    if(!data || data.err){
-      toast.error(data?.message || "Failed to update room")
-      return
-    }
+  //   if(!data || data.err){
+  //     toast.error(data?.message || "Failed to update room")
+  //     return
+  //   }
 
-    toast.success("Room details updated")
-  }
+  //   toast.success("Room details updated")
+  // }
 
   const handleDeclareWinner = async ()=>{
 
-    const data = await declareWinners(id,{
-      winners:[
-        {
-          userId:winnerUserId,
-          position:Number(winnerPosition)
-        }
-      ]
-    })
+    if(!firstWinner || !secondWinner || !thirdWinner){
+  toast.error("Please enter all 3 winners")
+  return
+}
+const data = await declareWinners(id,{
+  winners:[
+    { userId:firstWinner, position:1 },
+    { userId:secondWinner, position:2 },
+    { userId:thirdWinner, position:3 }
+  ]
+})
 
-    if(!data || data.err){
-      toast.error(data?.message || "Failed to declare winner")
-      return
-    }
+if(!data || data.err){
+  toast.error(data?.message || "Failed to declare winners")
+  return
+}
 
-    toast.success("Winner declared")
-  }
+toast.success("Winners declared")
+}
 
   const handleCancelTournament = async ()=>{
 
@@ -119,7 +123,7 @@ export default function TournamentDetails() {
 
         {/* Room Details */}
 
-        <div className="bg-[#0f172a] p-6 rounded-xl border border-blue-900/40 mt-6">
+        {/* <div className="bg-[#0f172a] p-6 rounded-xl border border-blue-900/40 mt-6">
 
           <h2 className="text-xl text-blue-400 mb-4">
             Room Details
@@ -146,12 +150,12 @@ export default function TournamentDetails() {
             Update Room
           </button>
 
-        </div>
+        </div> */}
 
 
         {/* Update Status */}
 
-        <div className="bg-[#0f172a] p-6 rounded-xl border border-blue-900/40 mt-6">
+        {/* <div className="bg-[#0f172a] p-6 rounded-xl border border-blue-900/40 mt-6">
 
           <h2 className="text-xl text-blue-400 mb-4">
             Update Tournament Status
@@ -173,7 +177,7 @@ export default function TournamentDetails() {
             Update Status
           </button>
 
-        </div>
+        </div> */}
 
         <div className="bg-[#0f172a] p-6 rounded-xl border border-blue-900/40 mt-6">
 
@@ -181,7 +185,7 @@ export default function TournamentDetails() {
             Declare Winner
           </h2>
 
-          <input
+          {/* <input
           placeholder="User ID"
           value={winnerUserId}
           onChange={(e)=>setWinnerUserId(e.target.value)}
@@ -193,7 +197,28 @@ export default function TournamentDetails() {
           value={winnerPosition}
           onChange={(e)=>setWinnerPosition(e.target.value)}
           className="w-full mb-3 p-2 bg-[#020617] border border-blue-900/40 rounded"
-          />
+          /> */}
+
+          <input
+placeholder="1st Place User ID"
+value={firstWinner}
+onChange={(e)=>setFirstWinner(e.target.value)}
+className="w-full mb-3 p-2 bg-[#020617] border border-blue-900/40 rounded"
+/>
+
+<input
+placeholder="2nd Place User ID"
+value={secondWinner}
+onChange={(e)=>setSecondWinner(e.target.value)}
+className="w-full mb-3 p-2 bg-[#020617] border border-blue-900/40 rounded"
+/>
+
+<input
+placeholder="3rd Place User ID"
+value={thirdWinner}
+onChange={(e)=>setThirdWinner(e.target.value)}
+className="w-full mb-3 p-2 bg-[#020617] border border-blue-900/40 rounded"
+/>
 
           <button
           onClick={handleDeclareWinner}
